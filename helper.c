@@ -39,15 +39,8 @@ for (int i = 0; i < 4; i++) {
 return 0;
 }
 
-// Utility function to find the first empty slot in the routing table
-int find_empty_slot(linkaddr_t *table, int size) {
-    for (int i = 0; i < size; i++) {
-        if (table[i].u8[0] == 0 && table[i].u8[1] == 0) { // Check if the address is NULL
-            return i;
-        }
-    }
-    return -1; // No empty slot found
-}
+
+
 
 void pktt(uint8_t type, uint8_t unicast, uint8_t id, uint8_t node, uint8_t signal, uint32_t data)
 {

@@ -19,7 +19,10 @@ typedef struct message{
 			// 1 = connection accepted
 			// 2 = sending sensor data
 			// 4 = irrigation
-			// H = heartbeat message
+			// H = heartbeat message from devices to subgateway
+			// a = advertisment 
+			// l,b,i = customed responses for light,bulb,irrigation candidates.
+			
 			
 	uint8_t unicast; 	// 0 = broadcast
 				// 1 = unicast
@@ -55,8 +58,6 @@ void u32_to_u8(const uint32_t u32, uint8_t* u8);
 
 int containsAddr(linkaddr_t* array, const linkaddr_t* item);
 
-// Utility function to find the first empty slot in the routing table
-int find_empty_slot(linkaddr_t *table, int size); 
 
 void pktt(uint8_t type, uint8_t unicast, uint8_t id, uint8_t node, uint8_t signal, uint32_t data);
 

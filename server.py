@@ -11,7 +11,7 @@ def recv(sock):
     buf = b""
     while True:
         # Use select to check if there's data to read
-        readable,_,_= select.select([sock], [], [], 5)
+        readable,_,_= select.select([sock], [], [], 1)
         if readable:
             data = sock.recv(1)
             if not data:
@@ -60,7 +60,7 @@ def main(ip, port):
             try:
                 #print(current_time - time_irrigation)
                 
-                if(current_time - time_irrigation  >=5):
+                if(current_time - time_irrigation  >=60):
                     print("sending irrigation message from server")
                     sock.send(b"4\n")
                     irrigation=0
@@ -75,7 +75,7 @@ def main(ip, port):
                     print("continue")
                 print(data.decode("utf-8"))
                 
-                
+  
                 
             except socket.timeout:
                 print("No more message received. Closing the socket and the program.")
@@ -94,5 +94,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args.ip, args.port)
-
-

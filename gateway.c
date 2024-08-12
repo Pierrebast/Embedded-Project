@@ -2,11 +2,13 @@
 #include "dev/serial-line.h"
 #include "cpu/msp430/dev/uart0.h"
 #include "helper.h"
-#include <stdio.h> /* For printf() */
 #include <inttypes.h> 
 #include "sys/node-id.h"
 #include "sys/etimer.h"
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "sys/clock.h" 
 
 
 
@@ -17,10 +19,12 @@
 
 /* Configuration */
 
-#define HEARTBEAT_INTERVAL (25 * CLOCK_SECOND)
+#define HEARTBEAT_INTERVAL (2 * CLOCK_SECOND)
 #define HEARTBEAT_TIMEOUT  (60 * CLOCK_SECOND)
 
 #define MAX_GREENHOUSES 4
+
+
 
 typedef struct {
     linkaddr_t address;
@@ -53,7 +57,9 @@ PROCESS(receive, "Receive messages from others");
 AUTOSTART_PROCESSES(&test_serial, &receive);
 
 int irrigation = 0;
-int bulb = 0;
+int bulb=0;
+uint8_t id=0;
+
 
 /* Input callback to handle incoming messages */
 void input_callback(const void *data, uint16_t len, const linkaddr_t *src, const linkaddr_t *dest)
@@ -61,16 +67,15 @@ void input_callback(const void *data, uint16_t len, const linkaddr_t *src, const
     msg_t rcv_msg;
     dataToStruct(&rcv_msg, data);
 
-  
-
+  /*
      if ((char)rcv_msg.type == 'H' && (char)rcv_msg.node == '2') { 
 
 	// Handle heartbeat message
         handle_heartbeat(src);
 
-    }
+    }*/
 
-    else if ((char)rcv_msg.type == '0' && (char)rcv_msg.node == '2') { // New sub-gateway connection request
+    if ((char)rcv_msg.type == '0' && (char)rcv_msg.node == '2') { // New sub-gateway connection request
 	
 	
 		
@@ -103,16 +108,20 @@ void input_callback(const void *data, uint16_t len, const linkaddr_t *src, const
     } 
     // Handle data from sensors and forward to server
     else if ((char)rcv_msg.type == '2' && (char)rcv_msg.node == '3') {
-        nullnet_buf = (uint8_t*) data;
-        nullnet_len = len;
-        printf("%lu\n", rcv_msg.data);
+	id = rcv_msg.id;
+	printf("ID bulb data: %u\n",id);
+        printf("%lu\n",rcv_msg.data); 
     } 
     else if ((char)rcv_msg.type == '4' && (char)rcv_msg.node == '5') {
-        printf("Irrigation system of the greenhouse %c stopped\n",(char)rcv_msg.id);
+		if((char)rcv_msg.signal == '1'){
+			printf("Acknowledgment for the irrigation system of the greenhouse %u \n",rcv_msg.id);
+		}else{
+        		printf("Irrigation system of the greenhouse %u stopped successfully\n",rcv_msg.id);
+		}
     } 
     else {
-        LOG_INFO("Received unknown type\n");
-	printf("type = %c , node = %c , id = %c \n",(char)rcv_msg.type,(char)rcv_msg.node,(char)rcv_msg.id);
+        LOG_INFO("Received unknown type,ignoring.\n");
+	
     }
 }
 
@@ -125,23 +134,24 @@ PROCESS_THREAD(test_serial, ev, data)
     uart0_set_input(serial_line_input_byte);
 
     LOG_INFO("Starting serial process\n");
+  
 
     while (1) {
         PROCESS_YIELD();
         if (ev == serial_line_event_message) {
-            msg_t rcv_msg;
-            dataToStruct(&rcv_msg, (char*)data);
-
-            if (rcv_msg.type == '4') {
-                irrigation = 1; // Start irrigation
+            
+            if (strcmp(data, "4") == 0) {
+		// Handle irrigation message
+		irrigation = 1;
             }
+	    if (strcmp(data, "1") == 0) {
+		// Handle irrigation message
+		bulb = 1;
+	    }
+	
+    	}
 
-            if (rcv_msg.type == '1') {
-                bulb = 1; // Start bulb process
-            }
-        }
     }
-
     PROCESS_END();
 }
 
@@ -160,13 +170,12 @@ PROCESS_THREAD(receive, ev, data)
     while (1) {
         PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&periodic_timer));
 
-	if(subgateways!=NULL){
+	/*if(subgateways!=NULL){
 		for (int i = 0; i < nbSubgateway; i++) {
 		    
 			LOG_INFO("Sub-gateway %u is still connected\n", subgateways[i].greenhouse_id);
 		}
-	}
-
+	}*/
         if (irrigation == 1) { // Multicast irrigation message
             irrigation = 0;
             msg_t irri_msg = {'4', '0', '0', '1', '0', 0}; // Type 4, node type 1
@@ -182,18 +191,23 @@ PROCESS_THREAD(receive, ev, data)
 
         if (bulb == 1) { // Multicast bulb control message
             bulb = 0;
-            msg_t bulb_msg = {'2', '0', '0', '1', '0', 0}; // Type 2, node type 1
+            msg_t bulb_msg = {'2', '0', id, '1', '0', 0}; // Type 2, node type 1
             uint8_t payload[sizeof(msg_t)];
             structToPayload(&bulb_msg, payload);
 
             for (int i = 0; i < nbSubgateway; i++) {
                 nullnet_buf = payload;
                 nullnet_len = sizeof(payload);
-                NETSTACK_NETWORK.output(&subgateways[i].address); // Send to each sub-gateway
+                
+                if(subgateways[i].greenhouse_id == id)
+		  // printf("Data sent back to subgateway ID %u\n",subgateways[i].greenhouse_id);
+                   NETSTACK_NETWORK.output(&subgateways[i].address); // Send to corresponding id sub-gateway
+		   
             }
+	    id=0;
         }
 
-
+	/*
 	clock_time_t current_time = clock_time();
 	for (int i = 0; i < nbSubgateway; i++) {
 	    if (current_time - subgateways[i].last_heartbeat > HEARTBEAT_TIMEOUT) {
@@ -210,7 +224,7 @@ PROCESS_THREAD(receive, ev, data)
 		// Adjust the loop index since we've modified the array
 		i--;
 	    }
-	}
+	}*/
 
         etimer_reset(&periodic_timer);
     }
