@@ -60,7 +60,7 @@ def main(ip, port):
             try:
                 #print(current_time - time_irrigation)
                 
-                if(current_time - time_irrigation  >=60):
+                if(current_time - time_irrigation  >=45):
                     print("sending irrigation message from server")
                     sock.send(b"4\n")
                     irrigation=0

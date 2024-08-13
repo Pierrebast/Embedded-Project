@@ -19,8 +19,8 @@
 
 /* Configuration */
 
-#define HEARTBEAT_INTERVAL (2 * CLOCK_SECOND)
-#define HEARTBEAT_TIMEOUT  (60 * CLOCK_SECOND)
+#define SEND_INTERVAL (2 * CLOCK_SECOND)
+
 
 #define MAX_GREENHOUSES 4
 
@@ -160,11 +160,13 @@ PROCESS_THREAD(test_serial, ev, data)
 PROCESS_THREAD(receive, ev, data)
 {
     static struct etimer periodic_timer;
+  
+
 
     PROCESS_BEGIN();
     nullnet_set_input_callback(input_callback);
     NETSTACK_NETWORK.output(NULL);
-    etimer_set(&periodic_timer, HEARTBEAT_INTERVAL);
+    etimer_set(&periodic_timer, SEND_INTERVAL);
 
 
     while (1) {
@@ -181,12 +183,19 @@ PROCESS_THREAD(receive, ev, data)
             msg_t irri_msg = {'4', '0', '0', '1', '0', 0}; // Type 4, node type 1
             uint8_t payload[sizeof(msg_t)];
             structToPayload(&irri_msg, payload);
+            nullnet_buf = payload;
+            nullnet_len = sizeof(payload);
+	  
+ 	    
 
-            for (int i = 0; i < nbSubgateway; i++) {
-                nullnet_buf = payload;
-                nullnet_len = sizeof(payload);
-                NETSTACK_NETWORK.output(&subgateways[i].address); // Send to each sub-gateway
+           for(int i=0;i < nbSubgateway;i++) {
+                // Send to the current sub-gateway
+                NETSTACK_NETWORK.output(&subgateways[i].address); 
+                //printf("Gateway sending irrigation message to greenhouse ID %u with address ", subgateways[i].greenhouse_id);
+                
+             
             }
+            
         }
 
         if (bulb == 1) { // Multicast bulb control message
@@ -194,10 +203,11 @@ PROCESS_THREAD(receive, ev, data)
             msg_t bulb_msg = {'2', '0', id, '1', '0', 0}; // Type 2, node type 1
             uint8_t payload[sizeof(msg_t)];
             structToPayload(&bulb_msg, payload);
+            nullnet_buf = payload;
+            nullnet_len = sizeof(payload);
 
             for (int i = 0; i < nbSubgateway; i++) {
-                nullnet_buf = payload;
-                nullnet_len = sizeof(payload);
+                
                 
                 if(subgateways[i].greenhouse_id == id)
 		  // printf("Data sent back to subgateway ID %u\n",subgateways[i].greenhouse_id);

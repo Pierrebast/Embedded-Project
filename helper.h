@@ -19,9 +19,9 @@ typedef struct message{
 			// 1 = connection accepted
 			// 2 = sending sensor data
 			// 4 = irrigation
-			// H = heartbeat message from devices to subgateway
-			// a = advertisment 
-			// l,b,i = customed responses for light,bulb,irrigation candidates.
+			// H = heartbeat message from devices to subgateways
+			// l,b,i = customed type for discovery response to light,bulb,irrigation
+			// M,Z = pair of type between light and MobileTerminal
 			
 			
 	uint8_t unicast; 	// 0 = broadcast

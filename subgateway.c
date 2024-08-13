@@ -242,6 +242,7 @@ void input_callback(const void *data, uint16_t len,
 
     // Irrigation start message to irrigation
     if ((char) rcv_msg.type == '4' && (char) rcv_msg.node == '1') {
+	   
             msg_t irrig_msg;
 	    irrig_msg.type = '4';
 	    irrig_msg.id = (uint8_t)node_id;

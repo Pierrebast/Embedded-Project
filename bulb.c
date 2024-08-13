@@ -11,7 +11,7 @@
 #define LOG_LEVEL LOG_LEVEL_INFO
 /* Configuration */
 #define DISCOVERY_INTERVAL (4 * CLOCK_SECOND) // Interval between discovery broadcasts
-#define DISCOVERY_WAIT_TIME (8 * CLOCK_SECOND) // Total discovery time
+#define DISCOVERY_WAIT_TIME (10 * CLOCK_SECOND) // Total discovery time
 #define HEARTBEAT_INTERVAL (20 * CLOCK_SECOND) // Interval for sending heartbeat messages
 #define SEND_INTERVAL (20 * CLOCK_SECOND) // Interval for sending data messages
 #define BACKOFF_MAX (3 * CLOCK_SECOND) // Maximum backoff time
