@@ -2,7 +2,7 @@
 
 # 🌿 Greenhouse — IoT Sensor Network
 
-**LINFO2146 · Mobile and Embedded Computing · UCLouvain 2023–2024**
+** · Mobile and Embedded Computing · UCLouvain 2023–2024**
 
 ![Contiki](https://img.shields.io/badge/Contiki--NG-IoT-4CAF50?style=flat)
 ![Cooja](https://img.shields.io/badge/Simulator-Cooja-0077FF?style=flat)
