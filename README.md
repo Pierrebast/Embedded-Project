@@ -123,6 +123,6 @@ The full written analysis — covering design decisions, protocol details, simul
 
 <div align="center">
 
-UCLouvain · Academic year 2023–2024 · Pierre B.*
+UCLouvain · Academic year 2023–2024 · Pierre B.
 
 </div>
