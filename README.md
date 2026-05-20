@@ -69,13 +69,14 @@ The full design report is available here: [`report.pdf`](./report.pdf)
 ## 🗂️ Code Structure
 
 ```
-├── gateway.c          # Central gateway — bridges server and subgateways
-├── subgateway.c       # Per-greenhouse coordinator with routing table
-├── light.c            # Light sensor — sends luminosity values (0–100)
-├── bulb.c             # Bulb — turns on for 5s on server command
-├── irrigation.c       # Irrigation — activates for 2s, sends ACK
+├──src/
+      ├── gateway.c          # Central gateway — bridges server and subgateways
+      ├── subgateway.c       # Per-greenhouse coordinator with routing table
+      ├── light.c            # Light sensor — sends luminosity values (0–100)
+      ├── bulb.c             # Bulb — turns on for 5s on server command
+      ├── irrigation.c       # Irrigation — activates for 2s, sends ACK
+      ├── helper.h / .c      # Shared packet structure & utility functions
 ├── server.py          # Python server — TCP connection to gateway
-├── helper.h / .c      # Shared packet structure & utility functions
 └── Makefile
 ```
 
